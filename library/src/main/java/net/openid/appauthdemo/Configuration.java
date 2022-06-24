@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,16 +28,14 @@ import androidx.annotation.Nullable;
 import net.openid.appauth.connectivity.ConnectionBuilder;
 import net.openid.appauth.connectivity.DefaultConnectionBuilder;
 
+import org.apache.commons.codec.binary.Hex;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
-
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.Okio;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 /**
@@ -76,20 +75,20 @@ public final class Configuration {
     public static Configuration getInstance(Context context) {
         Configuration config = sInstance.get();
         if (config == null) {
-            config = new Configuration(context);
+            config = new Configuration(context, "");
             sInstance = new WeakReference<Configuration>(config);
         }
 
         return config;
     }
 
-    public Configuration(Context context) {
+    public Configuration(Context context, String clientId) {
         mContext = context;
         mPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         mResources = context.getResources();
 
         try {
-            readConfiguration();
+            readConfiguration(clientId);
         } catch (InvalidConfigurationException ex) {
             mConfigError = ex.getMessage();
         }
@@ -147,7 +146,9 @@ public final class Configuration {
     }
 
     @Nullable
-    public Uri getEndSessionRedirectUri() { return mEndSessionRedirectUri; }
+    public Uri getEndSessionRedirectUri() {
+        return mEndSessionRedirectUri;
+    }
 
     @Nullable
     public Uri getAuthEndpointUri() {
@@ -189,24 +190,28 @@ public final class Configuration {
         return mPrefs.getString(KEY_LAST_HASH, null);
     }
 
-    private void readConfiguration() throws InvalidConfigurationException {
-        BufferedSource configSource =
-                Okio.buffer(Okio.source(mResources.openRawResource(R.raw.auth_config)));
-        Buffer configData = new Buffer();
+    private void generateConfig(String clientId) {
+        mConfigJson = new JSONObject();
         try {
-            configSource.readAll(configData);
-            mConfigJson = new JSONObject(configData.readString(Charset.forName("UTF-8")));
-        } catch (IOException ex) {
-            throw new InvalidConfigurationException(
-                    "Failed to read configuration: " + ex.getMessage());
-        } catch (JSONException ex) {
-            throw new InvalidConfigurationException(
-                    "Unable to parse configuration: " + ex.getMessage());
+            mConfigJson.put("client_id", clientId + ".app.googleusercontent.com");
+            mConfigJson.put("redirect_uri", "net.openid.appauthdemo:/oauth2redirect");
+            mConfigJson.put("end_session_redirect_uri", "net.openid.appauthdemo:/oauth2redirect");
+            mConfigJson.put("discovery_uri", "");
+            mConfigJson.put("authorization_endpoint_uri", "");
+            mConfigJson.put("token_endpoint_uri", "");
+            mConfigJson.put("user_info_endpoint_uri", "");
+            mConfigJson.put("https_required", true);
+        } catch (JSONException e) {
+            Log.e(TAG, "JSONException", e);
         }
+    }
 
-        mConfigHash = configData.sha256().base64();
+    private void readConfiguration(String clientId) throws InvalidConfigurationException {
+        generateConfig(clientId);
+
+        mConfigHash = getSHA256StrJava(mConfigJson.toString());
         mClientId = getConfigString("client_id");
-        mScope = getRequiredConfigString("authorization_scope");
+//        mScope = getRequiredConfigString("authorization_scope");
         mRedirectUri = getRequiredConfigUri("redirect_uri");
         mEndSessionRedirectUri = getRequiredConfigUri("end_session_redirect_uri");
 
@@ -233,6 +238,19 @@ public final class Configuration {
         }
 
         mHttpsRequired = mConfigJson.optBoolean("https_required", true);
+    }
+
+    private String getSHA256StrJava(String str) {
+        MessageDigest messageDigest;
+        String encodeStr = "";
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = messageDigest.digest(str.getBytes(StandardCharsets.UTF_8));
+            encodeStr = Hex.encodeHexString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "NoSuchAlgorithmException", e);
+        }
+        return encodeStr;
     }
 
     @Nullable

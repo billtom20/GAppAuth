@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -20,6 +21,8 @@ import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.AuthorizationServiceDiscovery;
+import net.openid.appauth.EndSessionRequest;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenResponse;
 import net.openid.appauthdemo.AuthStateManager;
@@ -29,15 +32,25 @@ import net.openid.appauthdemo.TokenActivity;
 import org.gappauth.sdk.BridgeActivity;
 import org.gappauth.sdk.entity.GSignInAccount;
 import org.gappauth.sdk.entity.GSignInOptions;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+
+import okio.Okio;
 
 public class GAppAuth {
 
     private static final String TAG = GAppAuth.class.getSimpleName();
     private static final Exception UNKNOWN_ERROR = new Exception("Unknown Error");
+    private static final int END_SESSION_REQUEST_CODE = 911;
 
     private final Activity mActivity;
     private final GSignInOptions mOptions;
@@ -134,7 +147,24 @@ public class GAppAuth {
         mActivity.startActivityForResult(authIntent, requestCode);
     }
 
-    public void signOut(OnSignOutListener listener){
+    @MainThread
+    private void endSession(OnSignOutListener listener) {
+        AuthState currentState = mAuthStateManager.getCurrent();
+        AuthorizationServiceConfiguration config =
+                currentState.getAuthorizationServiceConfiguration();
+        if (config.endSessionEndpoint != null) {
+            Intent endSessionIntent = mAuthService.getEndSessionRequestIntent(
+                    new EndSessionRequest.Builder(config)
+                            .setIdTokenHint(currentState.getIdToken())
+                            .setPostLogoutRedirectUri(mConfiguration.getEndSessionRedirectUri())
+                            .build());
+            mActivity.startActivityForResult(endSessionIntent, END_SESSION_REQUEST_CODE);
+        } else {
+            signOut(listener);
+        }
+    }
+
+    public void signOut(OnSignOutListener listener) {
         // discard the authorization and token state, but retain the configuration and
         // dynamic client registration (if applicable), to save from retrieving them again.
         AuthState currentState = mAuthStateManager.getCurrent();
@@ -147,13 +177,13 @@ public class GAppAuth {
         init(listener);
     }
 
-    public void parseAuthRequestFromIntent(Intent data, OnSignInListener listener){
+    public void parseAuthRequestFromIntent(Intent data, OnSignInListener listener) {
         mAccountBuilder = new GSignInAccount.Builder();
 
         if (mAuthStateManager.getCurrent().isAuthorized()) {
             Log.i(TAG, "User is already authenticated, proceeding to token activity");
             AuthorizationResponse lastResp = mAuthStateManager.getCurrent().getLastAuthorizationResponse();
-            if (lastResp!=null){
+            if (lastResp != null) {
                 mAccountBuilder.setServerAuthCode(lastResp.authorizationCode);
             }
 
@@ -175,7 +205,7 @@ public class GAppAuth {
 
         mAuthStateManager.updateAfterAuthorization(resp, ex);
 
-        if (resp == null){
+        if (resp == null) {
             Log.d(TAG, ex.toString());
             listener.onFailure(ex);
             return;
@@ -185,7 +215,56 @@ public class GAppAuth {
         mAuthService.performTokenRequest(resp.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
+                if (response == null) {
+                    Log.d(TAG, "authorization failed, check ex for more details", ex);
+                    listener.onFailure(ex != null ? ex : UNKNOWN_ERROR);
+                    return;
+                }
+                // exchange succeeded
+                mAuthStateManager.updateAfterTokenResponse(response, ex);
+                mAuthStateManager.getCurrent().performActionWithFreshTokens(mAuthService, new AuthState.AuthStateAction() {
+                    @Override
+                    public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                        fetchUserInfo(accessToken, ex, listener);
+                    }
+                });
+            }
+        });
+    }
 
+    private void fetchUserInfo(String accessToken, AuthorizationException ex, OnSignInListener listener) {
+        Log.d(TAG, "fetchUserInfo");
+        if (ex != null) {
+            Log.e(TAG, "Token refresh failed when fetching user info");
+            listener.onFailure(ex);
+            return;
+        }
+
+        AuthorizationServiceDiscovery discovery =
+                mAuthStateManager.getCurrent()
+                        .getAuthorizationServiceConfiguration()
+                        .discoveryDoc;
+
+        Uri userInfoEndpoint =
+                mConfiguration.getUserInfoEndpointUri() != null
+                        ? Uri.parse(mConfiguration.getUserInfoEndpointUri().toString())
+                        : Uri.parse(discovery.getUserinfoEndpoint().toString());
+
+        Log.d(TAG, userInfoEndpoint.toString());
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+                HttpURLConnection conn = mConfiguration.getConnectionBuilder().openConnection(
+                        userInfoEndpoint);
+                conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                conn.setInstanceFollowRedirects(false);
+                String response = Okio.buffer(Okio.source(conn.getInputStream()))
+                        .readString(StandardCharsets.UTF_8);
+                listener.onSuccess(mAccountBuilder.fromJson(response).build());
+            } catch (IOException ioEx) {
+                Log.e(TAG, "Network error when querying userinfo endpoint", ioEx);
+                listener.onFailure(ioEx);
             }
         });
     }
