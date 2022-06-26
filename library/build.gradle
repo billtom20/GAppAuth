@@ -1,13 +1,18 @@
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
 }
 
+def innerVersion = '1.0'
+group = 'com.github.billtom20'
+version = "${innerVersion}"
+
 android {
-    compileSdk 31
+    compileSdkVersion 31
 
     defaultConfig {
-        minSdk 19
-        targetSdk 31
+        minSdkVersion 19
+        targetSdkVersion 31
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -39,8 +44,23 @@ dependencies {
     implementation "commons-codec:commons-codec:1.11"
 
     api('com.google.android.gms:play-services-auth-base:18.0.3') {
+        exclude group: 'com.google.android.gms', module: 'play-services-basement'
         exclude group: 'com.google.android.gms', module: 'play-services-tasks'
     }
 
     api 'net.openid:appauth:0.11.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.billtom20'
+                artifactId = 'GAppAuth'
+                version = "${innerVersion}"
+            }
+        }
+    }
 }

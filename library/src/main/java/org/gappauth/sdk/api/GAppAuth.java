@@ -82,7 +82,7 @@ public class GAppAuth {
 
     private void init(OnSignOutListener listener) {
         mAuthStateManager = AuthStateManager.getInstance(mActivity);
-        mConfiguration = Configuration.getInstance(mActivity);
+        mConfiguration = Configuration.getInstance(mActivity, mOptions.getClientId());
 
         if (mAuthStateManager.getCurrent().isAuthorized()
                 && !mConfiguration.hasConfigurationChanged()) {
@@ -112,7 +112,7 @@ public class GAppAuth {
                         mServiceConfiguration = serviceConfiguration;
                         listener.onSuccess();
                     }
-                });
+                }, mConfiguration.getConnectionBuilder());
     }
 
     public void signIn(int requestCode) {
@@ -177,7 +177,7 @@ public class GAppAuth {
         init(listener);
     }
 
-    public void parseAuthRequestFromIntent(Intent data, OnSignInListener listener) {
+    public void parseAuthResultFromIntent(Intent data, OnSignInListener listener) {
         mAccountBuilder = new GSignInAccount.Builder();
 
         if (mAuthStateManager.getCurrent().isAuthorized()) {

@@ -59,7 +59,7 @@ public class GSignInAccount {
     @NonNull
     @Override
     public String toString() {
-        return "GSignInOptions{" +
+        return "GSignInAccount{" +
                 "id='" + id + '\'' +
                 ", email='" + email + '\'' +
                 ", displayName='" + displayName + '\'' +
@@ -80,6 +80,7 @@ public class GSignInAccount {
         private Uri photoUrl;
         private String serverAuthCode;
 
+        @NonNull
         public GSignInAccount.Builder fromJson(String jsonStr) {
             this.jsonResult = jsonStr;
             try {
@@ -90,7 +91,7 @@ public class GSignInAccount {
                 this.givenName = jsonObject.optString("given_name", "");
                 this.photoUrl = Uri.parse(jsonObject.optString("picture", ""));
             } catch (JSONException e) {
-                Log.e(TAG, "JSONException", e);
+                Log.e(TAG, "Failed to parse userinfo response", e);
             }
             return this;
         }

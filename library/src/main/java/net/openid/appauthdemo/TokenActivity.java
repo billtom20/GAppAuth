@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +43,7 @@ import net.openid.appauth.EndSessionRequest;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 
+import org.gappauth.sdk.R;
 import org.joda.time.format.DateTimeFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,9 +84,9 @@ public class TokenActivity extends AppCompatActivity {
 
         mStateManager = AuthStateManager.getInstance(this);
         mExecutor = Executors.newSingleThreadExecutor();
-        mConfiguration = Configuration.getInstance(this);
+        mConfiguration = Configuration.getInstance(this, "");
 
-        Configuration config = Configuration.getInstance(this);
+        Configuration config = Configuration.getInstance(this, "");
         if (config.hasConfigurationChanged()) {
             Toast.makeText(
                     this,
@@ -252,10 +252,10 @@ public class TokenActivity extends AppCompatActivity {
                 ((TextView) findViewById(R.id.userinfo_name)).setText(name);
 
                 if (userInfo.has("picture")) {
-                    GlideApp.with(TokenActivity.this)
-                            .load(Uri.parse(userInfo.getString("picture")))
-                            .fitCenter()
-                            .into((ImageView) findViewById(R.id.userinfo_profile));
+//                    GlideApp.with(TokenActivity.this)
+//                            .load(Uri.parse(userInfo.getString("picture")))
+//                            .fitCenter()
+//                            .into((ImageView) findViewById(R.id.userinfo_profile));
                 }
 
                 ((TextView) findViewById(R.id.userinfo_json)).setText(mUserInfoJson.toString());

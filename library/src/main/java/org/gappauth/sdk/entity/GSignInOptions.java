@@ -1,14 +1,8 @@
 package org.gappauth.sdk.entity;
 
-import android.net.Uri;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import net.openid.appauth.ResponseTypeValues;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +15,7 @@ public class GSignInOptions {
     private final List<String> scopes;
     private final String responseType;
 
+    @NonNull
     public static final List<String> DEFAULT_SIGN_IN = new ArrayList<String>() {
         {
             add("profile");
@@ -28,6 +23,7 @@ public class GSignInOptions {
         }
     };
 
+    @NonNull
     public static final List<String> DEFAULT_GAMES_SIGN_IN = new ArrayList<String>() {
         {
             add("https://www.googleapis.com/auth/games_lite");
@@ -40,6 +36,7 @@ public class GSignInOptions {
         this.responseType = responseType;
     }
 
+    @NonNull
     public String getClientId() {
         return clientId;
     }
@@ -52,6 +49,7 @@ public class GSignInOptions {
         return stringBuffer.toString().trim();
     }
 
+    @NonNull
     public String getResponseType() {
         return responseType;
     }

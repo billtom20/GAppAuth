@@ -26,11 +26,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.AnyThread;
@@ -56,8 +53,8 @@ import net.openid.appauth.RegistrationResponse;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.browser.AnyBrowserMatcher;
 import net.openid.appauth.browser.BrowserMatcher;
-import net.openid.appauth.browser.ExactBrowserMatcher;
-import net.openid.appauthdemo.BrowserSelectionAdapter.BrowserInfo;
+
+import org.gappauth.sdk.R;
 
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -108,7 +105,7 @@ public final class LoginActivity extends AppCompatActivity {
 
         mExecutor = Executors.newSingleThreadExecutor();
         mAuthStateManager = AuthStateManager.getInstance(this);
-        mConfiguration = Configuration.getInstance(this);
+        mConfiguration = Configuration.getInstance(this, "");
 
         if (mAuthStateManager.getCurrent().isAuthorized()
                 && !mConfiguration.hasConfigurationChanged()) {
@@ -314,30 +311,30 @@ public final class LoginActivity extends AppCompatActivity {
      */
     @MainThread
     private void configureBrowserSelector() {
-        Spinner spinner = (Spinner) findViewById(R.id.browser_selector);
-        final BrowserSelectionAdapter adapter = new BrowserSelectionAdapter(this);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                BrowserInfo info = adapter.getItem(position);
-                if (info == null) {
-                    mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
-                    return;
-                } else {
-                    mBrowserMatcher = new ExactBrowserMatcher(info.mDescriptor);
-                }
-
-                recreateAuthorizationService();
-                createAuthRequest(getLoginHint());
-                warmUpBrowser();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
-            }
-        });
+//        Spinner spinner = (Spinner) findViewById(R.id.browser_selector);
+//        final BrowserSelectionAdapter adapter = new BrowserSelectionAdapter(this);
+//        spinner.setAdapter(adapter);
+//        spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                BrowserInfo info = adapter.getItem(position);
+//                if (info == null) {
+//                    mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
+//                    return;
+//                } else {
+//                    mBrowserMatcher = new ExactBrowserMatcher(info.mDescriptor);
+//                }
+//
+//                recreateAuthorizationService();
+//                createAuthRequest(getLoginHint());
+//                warmUpBrowser();
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//                mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
+//            }
+//        });
     }
 
     /**
@@ -482,7 +479,7 @@ public final class LoginActivity extends AppCompatActivity {
                 mClientId.get(),
                 ResponseTypeValues.CODE,
                 mConfiguration.getRedirectUri())
-                .setScope(mConfiguration.getScope());
+                .setScope("profile openid email");
 
         if (!TextUtils.isEmpty(loginHint)) {
             authRequestBuilder.setLoginHint(loginHint);
