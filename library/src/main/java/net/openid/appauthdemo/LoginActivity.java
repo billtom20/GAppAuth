@@ -356,9 +356,9 @@ public final class LoginActivity extends AppCompatActivity {
             cancelIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             int flags = 0;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                flags |= PendingIntent.FLAG_MUTABLE;
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                flags |= PendingIntent.FLAG_MUTABLE;
+//            }
 
             mAuthService.performAuthorizationRequest(
                     mAuthRequest.get(),
