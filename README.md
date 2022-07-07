@@ -25,7 +25,7 @@ allprojects {
 3. Add codes below in app build.gradle file.
 ```java
 dependencies {
-    implementation 'com.github.billtom20:GAppAuth:1.0'
+    implementation 'com.github.billtom20:GAppAuth:<latest_version>'
     ...
 }
 ```
@@ -36,7 +36,7 @@ google.client_id_prefix=PREFIX
 ```
 5. Replace your own **signingConfigs** in ```build.gradle(Module:GAppAuth.app)```, it should be the keystore file used to generate the SHA-1 value configured on [Google Developer Console](https://console.developers.google.com/apis/credentials?project=_).
 
-API description
+## API description
 1. SignIn
 ```java
 GSignInOptions signInOptions = new GSignInOptions.Builder(GSignInOptions.DEFAULT_SIGN_IN)
