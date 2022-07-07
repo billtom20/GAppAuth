@@ -16,7 +16,7 @@ android {
     }
 
     signingConfigs {
-        debugAndRelease {
+        test {
             // todo
             storeFile file("${rootDir}/appauth.keystore")
             storePassword "appauth"
@@ -29,10 +29,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debugAndRelease
+            // todo
+            // signingConfig signingConfigs.test
         }
         debug {
-            signingConfig signingConfigs.debugAndRelease
+            signingConfig signingConfigs.test
         }
     }
     compileOptions {
