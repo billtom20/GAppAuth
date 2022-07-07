@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
         log = findViewById(R.id.log);
 
         GSignInOptions signInOptions = new GSignInOptions.Builder(GSignInOptions.DEFAULT_SIGN_IN)
-                .requestServerAuthCode("")
                 .requestEmail()
+                // .requestScopes("email")
                 .build();
         appAuth = new GAppAuth(this, signInOptions);
 

@@ -3,9 +3,19 @@ plugins {
     id 'maven-publish'
 }
 
-def innerVersion = '1.0'
+def innerVersion = '1.1'
 group = 'com.github.billtom20'
 version = "${innerVersion}"
+
+def clientId() {
+    Properties properties = new Properties()
+    try {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    } catch (ignored) {
+        // Ignore
+    }
+    return properties.getProperty("google.client_id_prefix", "invalid")
+}
 
 android {
     compileSdkVersion 30
@@ -16,6 +26,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "String", "GOOGLE_CLIENT_ID", "\"${clientId()}\""
+        manifestPlaceholders = [
+                redirectScheme: "com.googleusercontent.apps.${clientId()}"
+        ]
     }
 
     buildTypes {

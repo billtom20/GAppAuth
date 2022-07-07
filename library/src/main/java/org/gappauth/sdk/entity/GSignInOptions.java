@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import net.openid.appauth.ResponseTypeValues;
 
+import org.gappauth.sdk.BuildConfig;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,9 +57,7 @@ public class GSignInOptions {
     }
 
     public static final class Builder {
-        private String clientId;
-        private Set<String> scopes;
-        private final String responseType = ResponseTypeValues.CODE;
+        private final Set<String> scopes;
 
         @NonNull
         public GSignInOptions.Builder requestEmail() {
@@ -85,15 +85,9 @@ public class GSignInOptions {
         }
 
         @NonNull
-        public GSignInOptions.Builder requestServerAuthCode(@NonNull String clientId) {
-            this.clientId = clientId;
-            return this;
-        }
-
-        @NonNull
         public GSignInOptions build() {
             ArrayList<String> var2 = new ArrayList<>(this.scopes);
-            return new GSignInOptions(this.clientId, var2, this.responseType);
+            return new GSignInOptions(BuildConfig.GOOGLE_CLIENT_ID, var2, ResponseTypeValues.CODE);
         }
 
         public Builder() {

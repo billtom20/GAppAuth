@@ -194,12 +194,12 @@ public final class Configuration {
         mConfigJson = new JSONObject();
         try {
             mConfigJson.put("client_id", clientId + ".apps.googleusercontent.com");
-            mConfigJson.put("redirect_uri", "com.googleusercontent.apps" + clientId + ":/oauth2redirect");
+            mConfigJson.put("redirect_uri", "com.googleusercontent.apps." + clientId + ":/oauth2redirect");
             mConfigJson.put("end_session_redirect_uri", mContext.getPackageName() + ":/oauth2redirect");
             mConfigJson.put("discovery_uri", "https://accounts.google.com/.well-known/openid-configuration");
             mConfigJson.put("authorization_endpoint_uri", "https://accounts.google.com/o/oauth2/v2/auth");
             mConfigJson.put("token_endpoint_uri", "https://oauth2.googleapis.com/token");
-            mConfigJson.put("registration_endpoint_uri", "https://oauth2.googleapis.com/token");
+            mConfigJson.put("registration_endpoint_uri", "");
             mConfigJson.put("user_info_endpoint_uri", "");
             mConfigJson.put("https_required", true);
         } catch (JSONException e) {

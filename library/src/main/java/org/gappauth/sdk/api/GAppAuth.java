@@ -7,13 +7,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -23,26 +20,19 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.AuthorizationServiceDiscovery;
 import net.openid.appauth.EndSessionRequest;
-import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenResponse;
 import net.openid.appauthdemo.AuthStateManager;
 import net.openid.appauthdemo.Configuration;
-import net.openid.appauthdemo.TokenActivity;
 
 import org.gappauth.sdk.BridgeActivity;
 import org.gappauth.sdk.entity.GSignInAccount;
 import org.gappauth.sdk.entity.GSignInOptions;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 import okio.Okio;
 
@@ -96,6 +86,15 @@ public class GAppAuth {
             Log.i(TAG, "Configuration change detected, discarding old state");
             mAuthStateManager.replace(new AuthState());
             mConfiguration.acceptConfiguration();
+        }
+
+        if (mServiceConfiguration == null) {
+            AuthorizationServiceConfiguration serviceConfiguration = new AuthorizationServiceConfiguration(
+                    Uri.parse("https://accounts.google.com/o/oauth2/v2/auth") /* auth endpoint */,
+                    Uri.parse("https://www.googleapis.com/oauth2/v4/token") /* token endpoint */
+            );
+            mAuthStateManager.replace(new AuthState(serviceConfiguration));
+            mServiceConfiguration = serviceConfiguration;
         }
 
         AuthorizationServiceConfiguration.fetchFromUrl(

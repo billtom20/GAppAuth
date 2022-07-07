@@ -1,5 +1,7 @@
 # GAppAuth
 
+latest version: **1.1**
+
 GAppAuth is an SDK for applications installed on Android devices like phones, tablets use Google's OAuth 2.0 endpoints to authorize access to Google APIs.
 
 ## Usage
@@ -27,13 +29,19 @@ dependencies {
     ...
 }
 ```
+4. Add your Google client ID **PREFIX** in ```local.properties```
+   . Google client ID should look something like **PREFIX**.apps.googleusercontent.com, where **PREFIX** is an alphanumeric string unique to your client ID.
+```
+google.client_id_prefix=PREFIX
+```
+5. Replace your own **signingConfigs** in ```build.gradle(Module:GAppAuth.app)```, it should be the keystore file used to generate the SHA-1 value configured on [Google Developer Console](https://console.developers.google.com/apis/credentials?project=_).
 
 API description
 1. SignIn
 ```java
 GSignInOptions signInOptions = new GSignInOptions.Builder(GSignInOptions.DEFAULT_SIGN_IN)
-                .requestServerAuthCode("")
                 .requestEmail()
+                // .requestScopes("email")
                 .build();
 GAppAuth appAuth = new GAppAuth(this, signInOptions);
 
