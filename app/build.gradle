@@ -33,7 +33,8 @@ android {
             // signingConfig signingConfigs.test
         }
         debug {
-            signingConfig signingConfigs.test
+            // todo
+            // signingConfig signingConfigs.test
         }
     }
     compileOptions {
