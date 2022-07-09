@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 
 import net.openid.appauth.ResponseTypeValues;
 
-import org.gappauth.sdk.BuildConfig;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -87,7 +85,7 @@ public class GSignInOptions {
         @NonNull
         public GSignInOptions build() {
             ArrayList<String> var2 = new ArrayList<>(this.scopes);
-            return new GSignInOptions(BuildConfig.GOOGLE_CLIENT_ID, var2, ResponseTypeValues.CODE);
+            return new GSignInOptions("invalid", var2, ResponseTypeValues.CODE);
         }
 
         public Builder() {

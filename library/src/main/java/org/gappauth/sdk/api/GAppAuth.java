@@ -4,7 +4,10 @@ import static net.openid.appauth.AuthorizationException.EXTRA_EXCEPTION;
 import static net.openid.appauth.AuthorizationException.GeneralErrors.NETWORK_ERROR;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
 
@@ -20,6 +23,7 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.AuthorizationServiceDiscovery;
 import net.openid.appauth.EndSessionRequest;
+import net.openid.appauth.RedirectUriReceiverActivity;
 import net.openid.appauth.TokenResponse;
 import net.openid.appauthdemo.AuthStateManager;
 import net.openid.appauthdemo.Configuration;
@@ -71,8 +75,17 @@ public class GAppAuth {
     }
 
     private void init(OnSignOutListener listener) {
+        String clientId = "invalid";
+        try{
+            ActivityInfo activityInfo = mActivity.getPackageManager().getActivityInfo(
+                    new ComponentName(mActivity, RedirectUriReceiverActivity.class), PackageManager.GET_META_DATA);
+            clientId = activityInfo.metaData.getString("gappauth.google.clientid");
+        } catch (PackageManager.NameNotFoundException e) {
+            listener.onFailure(new Exception("client_id_prefix is invalid", e));
+            return;
+        }
         mAuthStateManager = AuthStateManager.getInstance(mActivity);
-        mConfiguration = Configuration.getInstance(mActivity, mOptions.getClientId());
+        mConfiguration = Configuration.getInstance(mActivity, clientId);
 
         if (mAuthStateManager.getCurrent().isAuthorized()
                 && !mConfiguration.hasConfigurationChanged()) {

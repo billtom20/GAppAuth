@@ -25,16 +25,19 @@
 
         <activity
             android:name="net.openid.appauth.RedirectUriReceiverActivity"
-            tools:node="replace"
-            android:exported="true">
+            android:exported="true"
+            tools:node="replace">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="${redirectScheme}" />
+                <data android:scheme="com.googleusercontent.apps.${clientId_prefix}" />
             </intent-filter>
+            <meta-data
+                android:name="gappauth.google.clientid"
+                android:value="${clientId_prefix}" />
         </activity>
     </application>
 

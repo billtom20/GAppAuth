@@ -13,11 +13,16 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // TODO add your own google client id prefix here
+        manifestPlaceholders = [
+                clientId_prefix: "186861594683-het08bpcuan9lfg1s2mjtk77rncp5hli"
+        ]
     }
 
     signingConfigs {
         test {
-            // todo
+            // TODO add your own signingConfig here
             storeFile file("${rootDir}/appauth.keystore")
             storePassword "appauth"
             keyAlias "appauth"
