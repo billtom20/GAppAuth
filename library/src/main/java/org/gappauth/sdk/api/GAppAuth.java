@@ -76,7 +76,7 @@ public class GAppAuth {
 
     private void init(OnSignOutListener listener) {
         String clientId = "invalid";
-        try{
+        try {
             ActivityInfo activityInfo = mActivity.getPackageManager().getActivityInfo(
                     new ComponentName(mActivity, RedirectUriReceiverActivity.class), PackageManager.GET_META_DATA);
             clientId = activityInfo.metaData.getString("gappauth.google.clientid");
