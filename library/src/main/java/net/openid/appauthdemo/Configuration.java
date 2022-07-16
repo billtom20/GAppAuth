@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -98,8 +99,8 @@ public final class Configuration {
      * Indicates whether the configuration has changed from the last known valid state.
      */
     public boolean hasConfigurationChanged() {
-        String lastHash = getLastKnownConfigHash();
-        return !mConfigHash.equals(lastHash);
+        String lastHash = getLastKnownConfigHash().trim();
+        return !mConfigHash.trim().equals(lastHash);
     }
 
     /**
@@ -247,7 +248,7 @@ public final class Configuration {
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
             byte[] hash = messageDigest.digest(str.getBytes(StandardCharsets.UTF_8));
-            encodeStr = Hex.encodeHexString(hash);
+            encodeStr = Base64.encodeToString(hash, Base64.DEFAULT);
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "NoSuchAlgorithmException", e);
         }
