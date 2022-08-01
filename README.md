@@ -1,6 +1,6 @@
 # GAppAuth
 
-latest version: **1.4**
+latest version: **1.6**
 
 GAppAuth is an SDK for applications installed on Android devices like phones, tablets use Google's OAuth 2.0 endpoints to authorize access to Google APIs.
 

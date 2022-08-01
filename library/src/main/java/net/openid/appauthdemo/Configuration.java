@@ -188,7 +188,7 @@ public final class Configuration {
     }
 
     private String getLastKnownConfigHash() {
-        return mPrefs.getString(KEY_LAST_HASH, null);
+        return mPrefs.getString(KEY_LAST_HASH, "");
     }
 
     private void generateConfig(String clientId) {

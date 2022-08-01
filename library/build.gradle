@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-def innerVersion = '1.5'
+def innerVersion = '1.6'
 group = 'com.github.billtom20'
 version = "${innerVersion}"
 
